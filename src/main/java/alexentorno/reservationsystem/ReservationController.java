@@ -1,0 +1,69 @@
+package alexentorno.reservationsystem;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+
+@RestController
+@RequestMapping("/reservation")
+public class ReservationController {
+
+    private static final Logger log = LoggerFactory.getLogger(ReservationController.class);
+
+    private final ReservationService reservationService;
+
+    public ReservationController(ReservationService reservationService) {
+        this.reservationService = reservationService;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Reservation> getReservationById(@PathVariable("id") Long id) {
+        log.info("getReservationById({})", id);
+        return ResponseEntity.ok(reservationService.getReservationById(id));
+
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Reservation>> getAllReservations() {
+        log.info("getAllReservations() called");
+        return ResponseEntity.ok(reservationService.getAllReservations());
+    }
+
+    @PostMapping
+    public ResponseEntity<Reservation> createReservation(
+            @RequestBody Reservation reservationToCreate
+    ) {
+        log.info("createReservation() called, data: {}", reservationToCreate);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(reservationService.createReservation(reservationToCreate));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Reservation> updateReservation(
+            @PathVariable("id") Long id,
+            @RequestBody Reservation reservationToUpdate
+    ) {
+        log.info("updateReservation() called, data: {}", reservationToUpdate);
+        var updated = reservationService.updateReservation(id, reservationToUpdate);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}/cancel")
+    public ResponseEntity<Void> deleteReservation(@PathVariable("id") Long id) {
+        log.info("deleteReservation() called, id: {}", id);
+        reservationService.cancelReservation(id);
+        return ResponseEntity.status(HttpStatus.OK).build();
+
+    }
+
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<Reservation> approveReservation(@PathVariable("id") Long id) {
+        log.info("approveReservation() called, id: {}", id);
+            return ResponseEntity.status(HttpStatus.OK).body(reservationService.approveReservation(id));
+    }
+}
